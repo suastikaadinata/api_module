@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\PenjualanController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [InventoryController::class, 'list']);
         Route::delete('/{id}', [InventoryController::class, 'delete']);
         Route::post('/{id}', [InventoryController::class, 'update']);
+    });
+
+    Route::group(['prefix' => 'penjualan'], function () {
+        Route::post('/', [PenjualanController::class, 'create']);
+        Route::get('/', [PenjualanController::class, 'list']);
+        Route::delete('/{id}', [PenjualanController::class, 'delete']);
+        Route::patch('/{id}', [PenjualanController::class, 'update']);
     });
 });
 

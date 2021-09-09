@@ -3,46 +3,32 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+use App\Models\Penjualan;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-use App\Models\Inventory;
-use Illuminate\Support\Carbon;
 
-class InventoryController extends Controller
+class PenjualanController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('admin');
-    }
-
     public function create(Request $request)
     {
         $validation = Validator::make($request->all(), [
             'nama'          => 'required|string',
-            'tgl_pembelian' => 'required|date_format:Y-m-d',
-            'no_bukti'      => 'required|string',
             'harga'         => 'required|numeric',
-            'foto'          => 'required|mimes:jpg,jpeg,png|max:2000'
+            'kode'          => 'required|string'
         ]);
 
         if ($validation->fails()) {
             return response()->json(["message" => $validation->errors()->first()], 400);
         } else {
             $status = DB::transaction(function () use ($request) {
-                $path = null;
-                if ($file = $request->file('foto')) {
-                    $path = $file->store('inventory', 'public');
-                }
-
-                $inventoryId = Inventory::insertGetId(array(
+                $penjualanId = Penjualan::insertGetId(array(
                     'nama'          => $request->nama,
-                    'tgl_pembelian' => $request->tgl_pembelian,
-                    'no_bukti'      => $request->no_bukti,
                     'harga'         => $request->harga,
-                    'foto'          => $path
+                    'kode'          => $request->kode
                 ));
 
-                return Inventory::findOrFail($inventoryId);
+                return Penjualan::findOrFail($penjualanId);
             });
 
             if ($status) {
@@ -55,7 +41,7 @@ class InventoryController extends Controller
 
     public function list()
     {
-        return response()->json(['data' => Inventory::all()], 200);
+        return response()->json(['data' => Penjualan::all()], 200);
     }
 
     public function update($id, Request $request)
@@ -63,39 +49,29 @@ class InventoryController extends Controller
         $needValidate = array(
             'id'            => $id,
             'nama'          => $request->nama,
-            'tgl_pembelian' => $request->tgl_pembelian,
-            'no_bukti'      => $request->no_bukti,
             'harga'         => $request->harga,
-            'foto'          => $request->foto,
+            'kode'          => $request->kode
         );
 
         $validation = Validator::make($needValidate, [
-            'id'            => 'required|numeric|exists:inventory',
+            'id'            => 'required|numeric|exists:penjualan',
             'nama'          => 'nullable|string',
-            'tgl_pembelian' => 'nullable|date_format:Y-m-d',
-            'no_bukti'      => 'nullable|string',
             'harga'         => 'nullable|numeric',
-            'foto'          => 'nullable|mimes:jpg,jpeg,png|max:2000'
+            'kode'          => 'nullable|string'
         ]);
 
         if ($validation->fails()) {
             return response()->json(["message" => $validation->errors()->first()], 400);
         } else {
             $status = DB::transaction(function () use ($id, $request) {
-                $inventory = Inventory::findOrFail($id);
-                $path = $inventory->foto;
-                if ($file = $request->file('foto')) {
-                    $path = $file->store('inventory', 'public');
-                }
+                $penjualan = Penjualan::findOrFail($id);
 
-                $inventory->nama = $this->checkParam($inventory->nama, $request->nama);
-                $inventory->tgl_pembelian = $this->checkParam($inventory->tgl_pembelian, $request->tgl_pembelian);
-                $inventory->no_bukti = $this->checkParam($inventory->no_bukti, $request->no_bukti);
-                $inventory->harga = $this->checkParam($inventory->harga, $request->harga);
-                $inventory->foto = $path;
-                $inventory->update();
+                $penjualan->nama = $this->checkParam($penjualan->nama, $request->nama);
+                $penjualan->harga = $this->checkParam($penjualan->harga, $request->harga);
+                $penjualan->kode = $this->checkParam($penjualan->kode, $request->kode);
+                $penjualan->update();
 
-                return $inventory;
+                return $penjualan;
             });
 
             if ($status) {
@@ -109,13 +85,13 @@ class InventoryController extends Controller
     public function delete($id)
     {
         $validation = Validator::make(['id' => $id], [
-            'id' => 'required|numeric|exists:inventory',
+            'id' => 'required|numeric|exists:penjualan',
         ]);
 
         if ($validation->fails()) {
             return response()->json(["message" => $validation->errors()->first()], 400);
         } else {
-            Inventory::find($id)->delete();
+            Penjualan::find($id)->delete();
             return response()->json(['message' => 'delete success'], 200);
         }
     }
