@@ -61,7 +61,7 @@ class AuthController extends Controller
                 $token = $user->createToken('LaravelAuthToken')->plainTextToken;
                 return response()->json(['token' => $token], 200);
             } else {
-                return response()->json(['error' => 'Unauthorised'], 401);
+                return response()->json(['message' => 'Email or password is invalid'], 400);
             }
         }
     }
