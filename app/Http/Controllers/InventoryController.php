@@ -55,7 +55,10 @@ class InventoryController extends Controller
 
     public function list()
     {
-        return response()->json(['data' => Inventory::all()], 200);
+        $inventory = DB::table("inventory", "inv")
+            ->select(DB::raw("inv.id, inv.nama, CONCAT('" . env('ASSET_URL') . "', inv.foto) as foto,inv.tgl_pembelian, inv.no_bukti, inv.harga, inv.created_at, inv.updated_at"))
+            ->get();
+        return response()->json(['data' => $inventory], 200);
     }
 
     public function update($id, Request $request)
@@ -117,6 +120,23 @@ class InventoryController extends Controller
         } else {
             Inventory::find($id)->delete();
             return response()->json(['message' => 'delete success'], 200);
+        }
+    }
+
+    public function detail($id)
+    {
+        $validation = Validator::make(['id' => $id], [
+            'id' => 'required|numeric|exists:inventory',
+        ]);
+
+        if ($validation->fails()) {
+            return response()->json(["message" => $validation->errors()->first()], 400);
+        } else {
+            $inventory = DB::table("inventory", "inv")
+                ->select(DB::raw("inv.id, inv.nama, CONCAT('" . env('ASSET_URL') . "', inv.foto) as foto,inv.tgl_pembelian, inv.no_bukti, inv.harga, inv.created_at, inv.updated_at"))
+                ->where('inv.id', '=', $id)
+                ->get();
+            return response()->json(['data' => $inventory[0]], 200);
         }
     }
 

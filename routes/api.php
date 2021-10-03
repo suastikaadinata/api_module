@@ -21,6 +21,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::group(['prefix' => 'inventory'], function () {
         Route::post('/', [InventoryController::class, 'create']);
         Route::get('/', [InventoryController::class, 'list']);
+        Route::get('/{id}', [InventoryController::class, 'detail']);
         Route::delete('/{id}', [InventoryController::class, 'delete']);
         Route::post('/{id}', [InventoryController::class, 'update']);
     });
